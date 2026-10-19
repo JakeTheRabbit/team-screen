@@ -16,7 +16,7 @@ Windows gives a second monitor two modes: **duplicate** (it shows exactly what o
 
 ## Features
 
-| | |
+| Feature | What it does |
 |---|---|
 | **Dashboard** | Big clock, date, optional message and a 2-day weather forecast. Or use any web page instead (e.g. a Home Assistant dashboard). |
 | **Mirror an area** | Drag a box anywhere on your screens and it streams live. A click without dragging takes a whole screen. A red outline shows what's live; it's excluded from capture, so it never appears on the team screen. |
@@ -37,7 +37,7 @@ Windows gives a second monitor two modes: **duplicate** (it shows exactly what o
 
 ### Settings
 
-| | |
+| General and Dashboard | Mirroring and Hotkeys |
 |---|---|
 | ![General settings](docs/screenshots/settings-general.png) | ![Dashboard settings](docs/screenshots/settings-dashboard.png) |
 | ![Mirroring settings](docs/screenshots/settings-mirroring.png) | ![Hotkey settings](docs/screenshots/settings-hotkeys.png) |
