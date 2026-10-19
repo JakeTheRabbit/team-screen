@@ -235,7 +235,9 @@ public sealed class Controller : IDisposable
         if (AreaPicker.IsOpen) return;
         // Leave the team screen itself out: your team shouldn't see the picker, and mirroring it onto itself is pointless.
         var sources = Monitors.All().Where(m => !m.Id.Equals(Settings.MonitorId, StringComparison.OrdinalIgnoreCase) || m.Mirrored).ToList();
-        AreaPicker.Pick(sources, r => _ = MirrorArea(r));
+        var team = ResolveMonitor();
+        double? aspect = Settings.LockAreaShape && team != null ? (double)team.Bounds.Width / team.Bounds.Height : null;
+        AreaPicker.Pick(sources, aspect, r => _ = MirrorArea(r));
     }
 
     public void MirrorLastArea()

@@ -19,7 +19,7 @@ Windows gives a second monitor two modes: **duplicate** (it shows exactly what o
 | Feature | What it does |
 |---|---|
 | **Dashboard** | Big clock, date, optional message and a 2-day weather forecast. Or use any web page instead (e.g. a Home Assistant dashboard). |
-| **Mirror an area** | Drag a box anywhere on your screens and it streams live. A click without dragging takes a whole screen. A red outline shows what's live; it's excluded from capture, so it never appears on the team screen. |
+| **Mirror an area** | Drag a box anywhere on your screens and it streams live, filling the team screen edge to edge (the box keeps the team screen's shape; hold Shift for any shape). A click without dragging takes a whole screen. A red outline shows what's live; it's excluded from capture, so it never appears on the team screen. |
 | **Mirror a window** | Streams one window, even when it's covered by other windows. |
 | **Show your clipboard** | Snip with Win+Shift+S, then put the picture up. A copied file or link works too. |
 | **Drag and drop** | Drop files or links on the preview window to put them up. |
@@ -52,7 +52,7 @@ All of them can be changed in **Settings → Hotkeys** (click a box, press the n
 |---|---|
 | `Ctrl` `Alt` `L` | Turn the team screen on/off |
 | `Ctrl` `Alt` `H` | Show the dashboard |
-| `Ctrl` `Alt` `R` | Mirror an area (drag a box) |
+| `Ctrl` `Alt` `R` | Mirror an area (drag a box; Shift = any shape) |
 | `Ctrl` `Alt` `Shift` `R` | Mirror the last area again |
 | `Ctrl` `Alt` `N` | Mirror the window you're in |
 | `Ctrl` `Alt` `P` | Show what's on your clipboard |

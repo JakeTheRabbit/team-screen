@@ -15,17 +15,17 @@ namespace TeamScreen;
 public static class Placement
 {
     /// <summary>
-    /// Put a borderless window exactly over a monitor (physical px). Moving the handle there before
-    /// showing lets WPF settle that monitor's DPI; maximising then fills it with no rounding gaps.
+    /// Put a borderless window exactly over a monitor (physical px). Sized directly rather than maximised:
+    /// re-maximising an already-shown window onto another monitor could leave it stuck at its restore size.
+    /// Applied before showing (so the handle lands on that monitor and WPF settles its DPI) and again after.
     /// </summary>
     public static void FillMonitor(Window w, Rect32 bounds)
     {
         w.WindowStartupLocation = WindowStartupLocation.Manual;
-        if (w.WindowState == WindowState.Maximized) w.WindowState = WindowState.Normal;
-        var h = new WindowInteropHelper(w).EnsureHandle();
-        Native.SetWindowPos(h, IntPtr.Zero, bounds.X + 50, bounds.Y + 50, 400, 300, Native.SWP_NOZORDER | Native.SWP_NOACTIVATE);
+        w.WindowState = WindowState.Normal;
+        SetBounds(w, bounds, w.Topmost);
         if (!w.IsVisible) w.Show();
-        w.WindowState = WindowState.Maximized;
+        SetBounds(w, bounds, w.Topmost);
     }
 
     /// <summary>Exact physical-pixel rectangle; applied twice because the first move can trigger a DPI rescale.</summary>
@@ -45,7 +45,8 @@ public static class AreaPicker
 
     public static bool IsOpen => open != null;
 
-    public static void Pick(IEnumerable<MonitorInfo> monitors, Action<Rect32> picked)
+    /// <param name="aspect">Width/height to lock the box to (the team screen's shape, so the mirror fills it). Shift drags free-form.</param>
+    public static void Pick(IEnumerable<MonitorInfo> monitors, double? aspect, Action<Rect32> picked)
     {
         if (open != null) return;
         Native.POINT? start = null;
@@ -70,7 +71,16 @@ public static class AreaPicker
             {
                 if (start is not { } s) return;
                 Native.GetCursorPos(out var p);
-                selection = Rect32.FromLTRB(Math.Min(s.X, p.X), Math.Min(s.Y, p.Y), Math.Max(s.X, p.X), Math.Max(s.Y, p.Y));
+                int dx = p.X - s.X, dy = p.Y - s.Y;
+                if (aspect is { } a && !Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+                {
+                    // Grow the short side to match the team screen's shape, keeping the drag direction.
+                    int w = Math.Abs(dx), h = Math.Abs(dy);
+                    if (w > h * a) h = (int)Math.Round(w / a); else w = (int)Math.Round(h * a);
+                    dx = dx < 0 ? -w : w;
+                    dy = dy < 0 ? -h : h;
+                }
+                selection = Rect32.FromLTRB(Math.Min(s.X, s.X + dx), Math.Min(s.Y, s.Y + dy), Math.Max(s.X, s.X + dx), Math.Max(s.Y, s.Y + dy));
                 foreach (var o in open!) o.ShowSelection(selection);
             };
             w.MouseLeftButtonUp += (_, _) =>
@@ -120,7 +130,7 @@ public static class AreaPicker
                 Child = new TextBlock
                 {
                     Foreground = Brushes.White, FontSize = 15, FontFamily = new FontFamily("Segoe UI Variable Text, Segoe UI"),
-                    Text = "Drag to choose what the team screen shows   ·   Click to show this whole screen   ·   Esc to cancel",
+                    Text = "Drag to choose what the team screen shows (hold Shift for any shape)   ·   Click to show this whole screen   ·   Esc to cancel",
                 },
             };
             canvas.Children.Add(box);

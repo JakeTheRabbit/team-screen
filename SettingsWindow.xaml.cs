@@ -212,6 +212,7 @@ public partial class SettingsWindow : Window
     }
 
     UIElement MirroringPage() => PageOf("Mirroring",
+        Card("Match the team screen's shape", "The box you drag keeps the team screen's proportions, so the mirror fills it edge to edge with no black bars. Hold Shift while dragging for any shape.", Switch(nameof(AppSettings.LockAreaShape))),
         Card("Frame rate", "Higher is smoother but uses more CPU. 15 is plenty for pages and documents.", SliderFor(nameof(AppSettings.Fps), 5, 60, "fps", 5)),
         Card("Show my mouse pointer", "Draws your pointer into the mirror so people can follow along.", Switch(nameof(AppSettings.ShowCursor))),
         Card("Outline the mirrored area on my screen", "A red frame around what's being shown (blue while frozen). It never appears on the team screen.", Switch(nameof(AppSettings.HighlightArea))),

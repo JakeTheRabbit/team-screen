@@ -66,6 +66,7 @@ public sealed class AppSettings
     public int Fps { get; set; } = 15;
     public bool ShowCursor { get; set; } = true;
     public bool HighlightArea { get; set; } = true;
+    public bool LockAreaShape { get; set; } = true;
     public FrameScaling Scaling { get; set; } = FrameScaling.Fit;
     public int AutoReturnMinutes { get; set; }
     public int[]? LastArea { get; set; }
