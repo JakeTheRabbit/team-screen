@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Team Screen</title>
+<style>
+  :root { --bg:#0b0c0e; --fg:#e8e8ea; --dim:#7d828c; --line:#1e2126; }
+  * { box-sizing:border-box; margin:0; }
+  html,body { height:100%; background:var(--bg); color:var(--fg); font-family:"Segoe UI Variable Display","Segoe UI",system-ui,sans-serif; overflow:hidden; cursor:none; }
+  main { height:100%; display:grid; grid-template-rows:1fr auto; padding:6vh 6vw; }
+  .clock { align-self:center; }
+  #time { font-size:22vh; font-weight:200; letter-spacing:-0.03em; line-height:1; font-variant-numeric:tabular-nums; }
+  #date { font-size:4.5vh; color:var(--dim); margin-top:2vh; }
+  #note:empty { display:none; }
+  #note { font-size:5vh; margin-top:4vh; }
+  footer { display:flex; gap:6vw; border-top:1px solid var(--line); padding-top:3vh; font-size:3.2vh; }
+  footer[hidden] { display:none; }
+  .k { color:var(--dim); font-size:2vh; text-transform:uppercase; letter-spacing:.12em; margin-bottom:.6vh; }
+</style>
+</head>
+<body>
+<main>
+  <section class="clock">
+    <div id="time">--:--</div>
+    <div id="date"></div>
+    <div id="note"></div>
+  </section>
+  <footer id="wx">
+    <div><div class="k">Now</div><div id="wx-now">–</div></div>
+    <div><div class="k">Today</div><div id="wx-day">–</div></div>
+    <div><div class="k">Tomorrow</div><div id="wx-tmr">–</div></div>
+  </footer>
+</main>
+<script>
+// Options come from the app: ?note=&h24=1&sec=1&wx=0&loc=-36.85,174.76
+const q = new URLSearchParams(location.search);
+const h24 = q.get('h24') === '1', sec = q.get('sec') === '1', showWx = q.get('wx') !== '0';
+document.getElementById('note').textContent = q.get('note') || '';
+document.getElementById('wx').hidden = !showWx;
+
+function tick() {
+  const d = new Date();
+  document.getElementById('time').textContent = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', second: sec ? '2-digit' : undefined, hour12: !h24 });
+  document.getElementById('date').textContent = d.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+}
+tick(); setInterval(tick, 1000);
+
+const WMO = { 0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Fog',51:'Drizzle',53:'Drizzle',55:'Drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Snow',80:'Showers',81:'Showers',82:'Heavy showers',95:'Thunder' };
+async function where() {
+  const loc = (q.get('loc') || '').split(',').map(Number);
+  if (loc.length === 2 && loc.every(Number.isFinite)) return { latitude: loc[0], longitude: loc[1] };
+  return (await fetch('https://ipapi.co/json/')).json();
+}
+async function weather() {
+  if (!showWx) return;
+  try {
+    const p = await where();
+    const u = `https://api.open-meteo.com/v1/forecast?latitude=${p.latitude}&longitude=${p.longitude}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&timezone=auto&forecast_days=2`;
+    const w = await (await fetch(u)).json();
+    const day = i => `${WMO[w.daily.weather_code[i]] ?? ''} · ${w.daily.temperature_2m_min[i]}–${w.daily.temperature_2m_max[i]}° · ${w.daily.precipitation_probability_max[i]}% rain`;
+    document.getElementById('wx-now').textContent = `${w.current.temperature_2m}° ${WMO[w.current.weather_code] ?? ''}`;
+    document.getElementById('wx-day').textContent = day(0);
+    document.getElementById('wx-tmr').textContent = day(1);
+  } catch { /* offline: leave dashes */ }
+}
+weather(); setInterval(weather, 15 * 60 * 1000);
+</script>
+</body>
+</html>
