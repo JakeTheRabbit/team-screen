@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 470" font-family="Segoe UI, system-ui, sans-serif">
+  <style>
+    .bg { fill: #ffffff; }
+    .ink { stroke: #2b2f36; fill: none; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+    .solid { fill: #2b2f36; }
+    .wood { fill: #c9a77c; stroke: #2b2f36; stroke-width: 3; }
+    .chair { fill: #8a93a0; stroke: #2b2f36; stroke-width: 3; }
+    .head { fill: #f2f3f5; stroke: #2b2f36; stroke-width: 4; }
+    .you { fill: #0078d4; }
+    .team { fill: #d13438; }
+    .glowYou { fill: #0078d4; opacity: .16; }
+    .glowTeam { fill: #d13438; opacity: .18; }
+    .sightYou { stroke: #0078d4; stroke-width: 2.5; stroke-dasharray: 7 6; fill: none; }
+    .sightTeam { stroke: #d13438; stroke-width: 2.5; stroke-dasharray: 7 6; fill: none; }
+    .cable { stroke: #69707a; stroke-width: 3; fill: none; stroke-dasharray: 2 6; stroke-linecap: round; }
+    .floor { stroke: #c4c8ce; stroke-width: 3; }
+    .label { fill: #1b1f24; font-size: 17px; font-weight: 600; }
+    .small { fill: #69707a; font-size: 14px; }
+    .title { fill: #1b1f24; font-size: 22px; font-weight: 600; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0d1117; }
+      .ink { stroke: #d6dae0; }
+      .solid { fill: #d6dae0; }
+      .wood { fill: #6e5638; stroke: #d6dae0; }
+      .chair { fill: #4a515c; stroke: #d6dae0; }
+      .head { fill: #2b313a; stroke: #d6dae0; }
+      .floor { stroke: #3a414b; }
+      .label, .title { fill: #e6edf3; }
+      .small { fill: #9aa4b0; }
+      .cable { stroke: #9aa4b0; }
+    }
+  </style>
+
+  <rect class="bg" width="900" height="470"/>
+  <text class="title" x="450" y="38" text-anchor="middle">One PC, one extra screen turned to face the room</text>
+
+  <line class="floor" x1="40" y1="410" x2="860" y2="410"/>
+
+  <!-- Light from each screen toward the person looking at it -->
+  <polygon class="glowYou" points="410,140 410,240 235,190 235,150"/>
+  <polygon class="glowTeam" points="574,128 574,240 718,190 718,150"/>
+
+  <!-- Desk -->
+  <rect class="wood" x="280" y="250" width="340" height="14" rx="3"/>
+  <line class="ink" x1="296" y1="264" x2="296" y2="410"/>
+  <line class="ink" x1="604" y1="264" x2="604" y2="410"/>
+
+  <!-- PC tower under the desk -->
+  <rect class="chair" x="440" y="318" width="64" height="92" rx="5"/>
+  <circle class="solid" cx="490" cy="332" r="4"/>
+  <text class="small" x="472" y="440" text-anchor="middle">Your PC</text>
+
+  <!-- Your monitor (faces you) -->
+  <rect class="you" x="410" y="140" width="12" height="100" rx="3"/>
+  <line class="ink" x1="422" y1="200" x2="436" y2="200"/>
+  <line class="ink" x1="436" y1="200" x2="436" y2="248"/>
+  <line class="ink" x1="418" y1="248" x2="456" y2="248"/>
+  <text class="label" x="392" y="110" text-anchor="middle">Your screens</text>
+  <text class="small" x="392" y="128" text-anchor="middle">only you see these</text>
+
+  <!-- Team screen (faces them) -->
+  <rect class="team" x="562" y="128" width="12" height="112" rx="3"/>
+  <line class="ink" x1="562" y1="196" x2="546" y2="196"/>
+  <line class="ink" x1="546" y1="196" x2="546" y2="248"/>
+  <line class="ink" x1="528" y1="248" x2="566" y2="248"/>
+  <text class="label" x="600" y="88" text-anchor="middle">Team screen</text>
+  <text class="small" x="600" y="106" text-anchor="middle">clock, or whatever you share</text>
+
+  <!-- Cables: PC to both screens -->
+  <path class="cable" d="M 460 318 C 455 290, 440 275, 436 250"/>
+  <path class="cable" d="M 486 318 C 500 290, 540 275, 546 250"/>
+
+  <!-- Keyboard -->
+  <rect class="solid" x="300" y="244" width="52" height="6" rx="2"/>
+
+  <!-- You: chair -->
+  <rect class="chair" x="140" y="295" width="100" height="12" rx="4"/>
+  <rect class="chair" x="136" y="190" width="14" height="117" rx="5"/>
+  <line class="ink" x1="190" y1="307" x2="190" y2="385"/>
+  <line class="ink" x1="155" y1="395" x2="225" y2="395"/>
+  <!-- You: person facing right -->
+  <circle class="head" cx="208" cy="160" r="24"/>
+  <circle class="solid" cx="220" cy="156" r="3"/>
+  <line class="ink" x1="200" y1="186" x2="186" y2="290"/>
+  <line class="ink" x1="186" y1="290" x2="268" y2="290"/>
+  <line class="ink" x1="268" y1="290" x2="268" y2="400"/>
+  <line class="ink" x1="268" y1="400" x2="290" y2="400"/>
+  <path class="ink" d="M 197 208 L 250 238 L 305 242"/>
+  <path class="sightYou" d="M 226 156 L 408 182"/>
+  <circle class="you" cx="208" cy="438" r="7"/>
+  <text class="label" x="222" y="444">You</text>
+
+  <!-- Team member: chair -->
+  <rect class="chair" x="660" y="295" width="100" height="12" rx="4"/>
+  <rect class="chair" x="750" y="190" width="14" height="117" rx="5"/>
+  <line class="ink" x1="710" y1="307" x2="710" y2="385"/>
+  <line class="ink" x1="675" y1="395" x2="745" y2="395"/>
+  <!-- Team member: person facing left -->
+  <circle class="head" cx="732" cy="160" r="24"/>
+  <circle class="solid" cx="720" cy="156" r="3"/>
+  <line class="ink" x1="740" y1="186" x2="754" y2="290"/>
+  <line class="ink" x1="754" y1="290" x2="672" y2="290"/>
+  <line class="ink" x1="672" y1="290" x2="672" y2="400"/>
+  <line class="ink" x1="672" y1="400" x2="650" y2="400"/>
+  <path class="ink" d="M 743 208 L 700 250 L 690 286"/>
+  <path class="sightTeam" d="M 714 156 L 576 180"/>
+  <circle class="team" cx="694" cy="438" r="7"/>
+  <text class="label" x="708" y="444">Your team</text>
+</svg>
