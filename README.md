@@ -14,7 +14,9 @@ Windows gives a second monitor two modes: **duplicate** (it shows exactly what o
 - You choose exactly what goes on it, and when.
 - Sharing copies the pixels off your screen, so anything you're already logged into just appears. Nothing has to sign in on the team screen.
 
-![You at your desk with your own screens; an extra screen on the same PC faces the person sitting opposite](docs/setup-diagram.svg)
+![You at your desk with your own screens; an extra screen on the same PC faces the person sitting opposite](docs/setup-photo.jpg)
+
+<sub>Illustration (AI-generated).</sub>
 
 ## How it works
 
