@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sample team page</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1b1f24; --dim:#69707a; --line:#e3e6ea; --a:#0078d4; --b:#8fb7e8; }
+  * { box-sizing:border-box; margin:0; }
+  body { background:var(--bg); color:var(--ink); font:16px "Segoe UI Variable Text","Segoe UI",system-ui,sans-serif; padding:40px 56px; }
+  header { display:flex; align-items:baseline; gap:16px; margin-bottom:28px; }
+  h1 { font:600 30px "Segoe UI Variable Display","Segoe UI",sans-serif; }
+  header span { color:var(--dim); }
+  main { display:grid; grid-template-columns:1.4fr 1fr; gap:28px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:28px; }
+  h2 { font:600 19px "Segoe UI Variable Display","Segoe UI",sans-serif; margin-bottom:20px; }
+  .bars { display:flex; align-items:flex-end; gap:22px; height:300px; border-bottom:1px solid var(--line); padding:0 8px; }
+  .bar { flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:8px; height:100%; }
+  .bar i { display:block; width:100%; background:var(--b); border-radius:6px 6px 0 0; }
+  .bar.now i { background:var(--a); }
+  .bar b { font-weight:600; font-variant-numeric:tabular-nums; }
+  .labels { display:flex; gap:22px; padding:10px 8px 0; color:var(--dim); }
+  .labels span { flex:1; text-align:center; }
+  ul { list-style:none; padding:0; }
+  li { display:flex; gap:12px; align-items:center; padding:14px 0; border-bottom:1px solid var(--line); font-size:17px; }
+  li:last-child { border:0; }
+  li em { margin-left:auto; color:var(--dim); font-style:normal; font-size:14px; }
+  .box { width:20px; height:20px; border:2px solid #9aa1aa; border-radius:5px; flex:none; }
+  .done .box { background:var(--a); border-color:var(--a); }
+  .done span { color:var(--dim); text-decoration:line-through; }
+  .note { margin-top:28px; color:var(--dim); font-size:14px; }
+</style>
+</head>
+<body>
+<header><h1>Team update</h1><span>Sample data for the Team Screen screenshots</span></header>
+<main>
+  <section class="card">
+    <h2>Orders per day</h2>
+    <div class="bars">
+      <div class="bar"><b>42</b><i style="height:52%"></i></div>
+      <div class="bar"><b>57</b><i style="height:70%"></i></div>
+      <div class="bar"><b>38</b><i style="height:47%"></i></div>
+      <div class="bar"><b>66</b><i style="height:81%"></i></div>
+      <div class="bar now"><b>74</b><i style="height:91%"></i></div>
+    </div>
+    <div class="labels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span></div>
+  </section>
+  <section class="card">
+    <h2>This week</h2>
+    <ul>
+      <li class="done"><div class="box"></div><span>Stocktake</span><em>Mon</em></li>
+      <li class="done"><div class="box"></div><span>New starter induction</span><em>Tue</em></li>
+      <li><div class="box"></div><span>Deliveries to the north depot</span><em>Thu</em></li>
+      <li><div class="box"></div><span>Clean the break room fridge</span><em>Fri</em></li>
+      <li><div class="box"></div><span>Team lunch, 12:30</span><em>Fri</em></li>
+    </ul>
+  </section>
+</main>
+<p class="note">Everything on this page is made up.</p>
+</body>
+</html>

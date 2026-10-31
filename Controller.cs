@@ -74,6 +74,21 @@ public sealed class Controller : IDisposable
         }
     }
 
+    /// <summary>
+    /// Command line, for Stream Deck / G HUB "run program" buttons and scripts:
+    /// <c>--run &lt;Action&gt;</c> (any hotkey action name, e.g. MirrorArea, Freeze, Draw) or <c>--share-area x,y,w,h</c> (physical pixels).
+    /// </summary>
+    public void RunCommand(string[] args)
+    {
+        for (var i = 0; i < args.Length - 1; i++)
+        {
+            if (args[i] == "--run" && Enum.TryParse<HotkeyAction>(args[i + 1], true, out var action)) Run(action);
+            else if (args[i] == "--share-area" && args[i + 1].Split(',') is [var x, var y, var w, var h]
+                     && int.TryParse(x, out var ix) && int.TryParse(y, out var iy) && int.TryParse(w, out var iw) && int.TryParse(h, out var ih))
+                _ = MirrorArea(new Rect32(ix, iy, iw, ih));
+        }
+    }
+
     // ---- Screen lifecycle ------------------------------------------------------------------
 
     async Task<bool> EnsureScreen(bool quiet = false)

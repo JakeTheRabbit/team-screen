@@ -112,7 +112,9 @@ public sealed class SharedArea : IDisposable
     {
         var h = new WindowInteropHelper(w).Handle;
         Native.AddExStyle(h, Native.WS_EX_TOOLWINDOW | Native.WS_EX_NOACTIVATE);
-        Native.SetWindowDisplayAffinity(h, Native.WDA_EXCLUDEFROMCAPTURE);
+        // TEAMSCREEN_DOCS_CAPTURE=1 only for taking README screenshots, which otherwise show these windows as black.
+        if (Environment.GetEnvironmentVariable("TEAMSCREEN_DOCS_CAPTURE") != "1")
+            Native.SetWindowDisplayAffinity(h, Native.WDA_EXCLUDEFROMCAPTURE);
     };
 
     internal static double Scale(Window w)

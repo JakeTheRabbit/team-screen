@@ -14,6 +14,43 @@ Windows gives a second monitor two modes: **duplicate** (it shows exactly what o
 - You choose exactly what goes on it, and when.
 - Sharing copies the pixels off your screen, so anything you're already logged into just appears. Nothing has to sign in on the team screen.
 
+## How it works
+
+### 1. Pick what to share
+
+Press `Ctrl` `Alt` `R` (or a spare macro key on your keyboard, see [below](#run-it-from-a-macro-key-stream-deck-or-script)). Your screens dim. Drag a box round what you want to show, like a screenshot tool, or click once to share a whole screen. `Esc` cancels.
+
+![The area picker: screens dim and you drag a box](docs/screenshots/howto-1-pick.png)
+
+### 2. It's live, and you stay in control
+
+The area goes on the team screen straight away. On *your* screen it gets a red frame and a toolbar. Your team never sees either.
+
+- **Resize:** drag any edge or corner of the red frame.
+- **Move:** drag the ✥ handle at the left of the toolbar.
+- **Add another:** press `Ctrl` `Alt` `R` again. Both areas show side by side.
+- **Stop:** **Stop sharing this area** takes just that one off. `Ctrl` `Alt` `H` stops everything and puts the dashboard back.
+
+![Two shared areas on your own screen, each with its frame and toolbar](docs/screenshots/howto-2-sharing.png)
+
+### 3. Draw on it
+
+Click **Draw** (or press `Ctrl` `Alt` `D`) and annotate like the PowerPoint pen: pen, highlighter, arrow, box and eraser in six colours, with **Undo** and **Clear**. Click **Draw** again and your mouse goes back to working your apps. The drawings stay until you clear them.
+
+![The area toolbar with the drawing tools open](docs/screenshots/howto-3-toolbar.png)
+
+### 4. What your team sees
+
+Each shared area fills its share of the team screen, drawings included, live.
+
+![The team screen: both areas side by side with the annotations](docs/screenshots/howto-4-team-screen.png)
+
+### 5. Keep an eye on it from your desk
+
+Left-click the tray icon for the preview window. It shows exactly what's on the team screen, with one-click **Stop sharing**, **Share another area**, **Draw**, **Freeze** and **Blank**.
+
+![The preview window while two areas are shared](docs/screenshots/howto-5-preview.png)
+
 ## Features
 
 | Feature | What it does |
@@ -66,6 +103,20 @@ All of them can be changed in **Settings → Hotkeys** (click a box, press the n
 
 Left-click the tray icon for the preview window. Right-click it for everything else, including a list of open windows to share.
 
+### Run it from a macro key, Stream Deck or script
+
+Team Screen takes commands on the command line and passes them to the copy already running in the tray:
+
+```powershell
+TeamScreen.exe --run MirrorArea              # same as Ctrl+Alt+R
+TeamScreen.exe --share-area 100,100,1280,720 # share an exact area: x,y,width,height in screen pixels
+TeamScreen.exe --run Dashboard               # stop sharing
+```
+
+`--run` takes any action name: `ToggleScreen`, `Dashboard`, `MirrorArea`, `MirrorLastArea`, `MirrorActiveWindow`, `ShowClipboard`, `Draw`, `ClearDrawings`, `Freeze`, `Blank`, `TogglePreview`, `OpenSettings`.
+
+For a gaming keyboard's G-keys (Logitech G HUB, Razer Synapse and so on), the simplest option is to set the key to the hotkey itself, e.g. `Ctrl` + `Alt` + `R`.
+
 > **If a hotkey does nothing:** some apps grab keys before Windows can hand them out. These include [Everything](https://www.voidtools.com/) (`Ctrl+Alt+F` by default) and the NVIDIA overlay (`Alt+Z`, `Ctrl+Alt+M`). Team Screen can't detect that kind of conflict, so pick a different combination in Settings.
 
 ## Install
@@ -88,13 +139,15 @@ cd team-screen
 dotnet run -c Release
 ```
 
+README screenshots: set `TEAMSCREEN_DOCS_CAPTURE=1` before starting the app so the area frames and toolbars show up in screenshots (normally they're hidden from capture). The sample page is `docs/demo/sample.html`.
+
 Release build (single self-contained exe):
 
 ```powershell
 dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
 ```
 
-## How it works
+## Under the hood
 
 | File | What it does |
 |---|---|
