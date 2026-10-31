@@ -65,14 +65,14 @@ public sealed class TrayIcon : IDisposable
         });
         menu.Items.Add(new Separator());
         menu.Items.Add(Item(on ? "Turn team screen off" : "Turn team screen on", "", c.ToggleScreen, HotkeyAction.ToggleScreen));
-        menu.Items.Add(Item("Show dashboard", "", () => _ = c.ShowDashboard(), HotkeyAction.Dashboard, c.Mode == ScreenMode.Dashboard));
+        menu.Items.Add(Item(c.Mode is ScreenMode.MirrorArea or ScreenMode.MirrorWindow ? "Stop sharing (show the dashboard)" : "Show the dashboard", "", () => _ = c.ShowDashboard(), HotkeyAction.Dashboard, c.Mode == ScreenMode.Dashboard));
         menu.Items.Add(new Separator());
-        menu.Items.Add(Item("Mirror an area…", "", c.PickArea, HotkeyAction.MirrorArea, c.Mode == ScreenMode.MirrorArea));
-        menu.Items.Add(Item("Mirror the last area", "", c.MirrorLastArea, HotkeyAction.MirrorLastArea, enabled: c.Settings.LastArea != null));
+        menu.Items.Add(Item(c.SharedAreaCount > 0 ? "Share another area…" : "Share an area of my screen…", "", c.PickArea, HotkeyAction.MirrorArea, c.Mode == ScreenMode.MirrorArea));
+        menu.Items.Add(Item("Share the last area again", "", c.MirrorLastArea, HotkeyAction.MirrorLastArea, enabled: c.Settings.LastArea != null));
 
         var windows = new MenuItem
         {
-            Header = "Mirror a window", IsChecked = c.Mode == ScreenMode.MirrorWindow,
+            Header = "Share a window", IsChecked = c.Mode == ScreenMode.MirrorWindow,
             Icon = new TextBlock { Text = "", FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = 14 },
         };
         foreach (var (handle, title) in Controller.OpenWindows().Take(25))
@@ -86,8 +86,11 @@ public sealed class TrayIcon : IDisposable
         menu.Items.Add(windows);
         menu.Items.Add(Item("Show what's on my clipboard", "", () => _ = c.ShowClipboard(), HotkeyAction.ShowClipboard));
         menu.Items.Add(new Separator());
-        menu.Items.Add(Item("Freeze", "", c.ToggleFreeze, HotkeyAction.Freeze, c.Frozen, on));
-        menu.Items.Add(Item("Blank", "", c.ToggleBlank, HotkeyAction.Blank, c.Blanked, on));
+        menu.Items.Add(Item("Draw on shared areas", "\uE70F", c.ToggleDrawing, HotkeyAction.Draw, c.Drawing, c.SharedAreaCount > 0));
+        menu.Items.Add(Item("Clear drawings", "\uE74D", c.ClearDrawings, HotkeyAction.ClearDrawings, enabled: c.SharedAreaCount > 0));
+        menu.Items.Add(new Separator());
+        menu.Items.Add(Item("Freeze (hold the current picture)", "", c.ToggleFreeze, HotkeyAction.Freeze, c.Frozen, on));
+        menu.Items.Add(Item("Blank (hide everything)", "", c.ToggleBlank, HotkeyAction.Blank, c.Blanked, on));
         menu.Items.Add(Item("Mute team screen sound", "", () =>
         {
             var s = c.Settings.Clone();
@@ -95,7 +98,7 @@ public sealed class TrayIcon : IDisposable
             c.ApplySettings(s);
         }, isChecked: c.Settings.MuteScreenAudio));
         menu.Items.Add(new Separator());
-        menu.Items.Add(Item("Preview window", "", c.TogglePreview, HotkeyAction.TogglePreview, c.PreviewOpen));
+        menu.Items.Add(Item("Preview window (see what your team sees)", "", c.TogglePreview, HotkeyAction.TogglePreview, c.PreviewOpen));
         menu.Items.Add(Item("Settings…", "", c.OpenSettings, HotkeyAction.OpenSettings));
         menu.Items.Add(Item("Exit", "", () => Application.Current.Shutdown()));
 

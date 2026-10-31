@@ -120,7 +120,7 @@ public static class AreaPicker
             Topmost = true;
             ShowInTaskbar = false;
             Cursor = Cursors.Cross;
-            Title = "Choose what to mirror";
+            Title = "Choose what to share";
 
             var hint = new Border
             {
@@ -130,7 +130,7 @@ public static class AreaPicker
                 Child = new TextBlock
                 {
                     Foreground = Brushes.White, FontSize = 15, FontFamily = new FontFamily("Segoe UI Variable Text, Segoe UI"),
-                    Text = "Drag to choose what the team screen shows (hold Shift for any shape)   ·   Click to show this whole screen   ·   Esc to cancel",
+                    Text = "Drag a box round what to share   ·   Click to share this whole screen   ·   Esc to cancel",
                 },
             };
             canvas.Children.Add(box);
@@ -153,42 +153,6 @@ public static class AreaPicker
             box.Visibility = size.Visibility = Visibility.Visible;
         }
     }
-}
-
-/// <summary>Click-through outline around the area being mirrored, hidden from screen capture so it never shows up on the team screen.</summary>
-public sealed class AreaOutline
-{
-    Window? window;
-    Border? border;
-
-    public void Show(Rect32 area, Color color)
-    {
-        if (window == null)
-        {
-            border = new Border { BorderThickness = new Thickness(3), CornerRadius = new CornerRadius(4) };
-            window = new Window
-            {
-                ThemeMode = ThemeMode.None, WindowStyle = WindowStyle.None, AllowsTransparency = true, Background = Brushes.Transparent,
-                ResizeMode = ResizeMode.NoResize, ShowInTaskbar = false, ShowActivated = false, Topmost = true, Content = border,
-                Title = "Team Screen mirrored area",
-            };
-            window.SourceInitialized += (_, _) =>
-            {
-                var h = new WindowInteropHelper(window).Handle;
-                Native.AddExStyle(h, Native.WS_EX_TRANSPARENT | Native.WS_EX_LAYERED | Native.WS_EX_TOOLWINDOW | Native.WS_EX_NOACTIVATE);
-                Native.SetWindowDisplayAffinity(h, Native.WDA_EXCLUDEFROMCAPTURE);
-            };
-        }
-        border!.BorderBrush = new SolidColorBrush(color);
-        var outer = Rect32.Inflate(area, 5, 5);
-        Placement.SetBounds(window, outer, topmost: true);
-        window.Show();
-        Placement.SetBounds(window, outer, topmost: true);
-    }
-
-    public void SetColor(Color color) { if (border != null) border.BorderBrush = new SolidColorBrush(color); }
-
-    public void Hide() => window?.Hide();
 }
 
 /// <summary>Flashes a big label on a monitor so you can tell which one it is.</summary>

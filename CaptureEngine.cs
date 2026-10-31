@@ -31,11 +31,13 @@ public sealed class CaptureEngine
     readonly Dispatcher ui = Dispatcher.CurrentDispatcher;
     Thread? thread;
     int generation;   // bumped on every start/stop; stale frames from an old loop are dropped
-    Rect32 area;
+    Rect32 area;   // guarded by areaLock: moved live while the frame is dragged
+    readonly object areaLock = new();
     IntPtr window;
     WriteableBitmap? surface;
 
-    public void StartArea(Rect32 r) { area = r; window = IntPtr.Zero; Begin(); }
+    public void StartArea(Rect32 r) { MoveArea(r); window = IntPtr.Zero; Begin(); }
+    public void MoveArea(Rect32 r) { lock (areaLock) area = r; }
     public void StartWindow(IntPtr hwnd) { window = hwnd; Begin(); }
 
     public void Stop()
@@ -81,6 +83,8 @@ public sealed class CaptureEngine
 
     Bitmap GrabArea()
     {
+        Rect32 area;
+        lock (areaLock) area = this.area;
         var bmp = new Bitmap(area.Width, area.Height, PixelFormat.Format32bppRgb);
         using var g = Graphics.FromImage(bmp);
         g.CopyFromScreen(area.X, area.Y, 0, 0, area.Size);

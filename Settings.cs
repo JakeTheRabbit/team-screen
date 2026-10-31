@@ -11,7 +11,7 @@ namespace TeamScreen;
 public enum HotkeyAction
 {
     ToggleScreen, Dashboard, MirrorArea, MirrorLastArea, MirrorActiveWindow,
-    ShowClipboard, Freeze, Blank, TogglePreview, OpenSettings,
+    ShowClipboard, Freeze, Blank, TogglePreview, OpenSettings, Draw, ClearDrawings,
 }
 
 public enum FrameScaling { Fit, Fill, Stretch }
@@ -66,7 +66,7 @@ public sealed class AppSettings
     public int Fps { get; set; } = 15;
     public bool ShowCursor { get; set; } = true;
     public bool HighlightArea { get; set; } = true;
-    public bool LockAreaShape { get; set; } = true;
+    public bool LockAreaShape { get; set; }   // off: drag any shape, like a screenshot tool
     public FrameScaling Scaling { get; set; } = FrameScaling.Fit;
     public int AutoReturnMinutes { get; set; }
     public int[]? LastArea { get; set; }
@@ -102,6 +102,8 @@ public sealed class AppSettings
             [HotkeyAction.Blank] = new(CA, Key.B),
             [HotkeyAction.TogglePreview] = new(CA, Key.W),
             [HotkeyAction.OpenSettings] = new(),
+            [HotkeyAction.Draw] = new(CA, Key.D),
+            [HotkeyAction.ClearDrawings] = new(),
         };
     }
 

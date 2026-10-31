@@ -1,7 +1,7 @@
 <Window x:Class="TeamScreen.PreviewWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Team Screen preview" Width="640" Height="440" MinWidth="380" MinHeight="300"
+        Title="Team Screen preview" Width="720" Height="460" MinWidth="440" MinHeight="300"
         WindowStartupLocation="Manual" AllowDrop="True">
     <Grid RowDefinitions="*,Auto" Margin="12">
         <Border CornerRadius="8" Background="Black" ClipToBounds="True">
@@ -22,7 +22,8 @@
         <DockPanel Grid.Row="1" Margin="0,12,0,0" LastChildFill="True">
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                 <Button x:Name="DashboardBtn" Content="Dashboard" Margin="0,0,6,0" Click="Dashboard_Click" />
-                <Button x:Name="AreaBtn" Content="Mirror area" Margin="0,0,6,0" Click="Area_Click" />
+                <Button x:Name="AreaBtn" Content="Share area" Margin="0,0,6,0" Click="Area_Click" />
+                <ToggleButton x:Name="DrawBtn" Content="Draw" Margin="0,0,6,0" Click="Draw_Click" ToolTip="Draw on the shared areas" />
                 <ToggleButton x:Name="FreezeBtn" Content="Freeze" Margin="0,0,6,0" Click="Freeze_Click" />
                 <ToggleButton x:Name="BlankBtn" Content="Blank" Margin="0,0,6,0" Click="Blank_Click" />
                 <Button x:Name="PowerBtn" Content="Turn off" Click="Power_Click" />

@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Windows.Controls;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
@@ -14,11 +16,12 @@ public partial class DisplayWindow : Window
 {
     public const string Host = "team.local";
 
-    enum Layer { Web, Live, Picture }
+    enum Layer { Web, Picture, Tiles }
 
     Layer content = Layer.Web;
     bool frozen, blanked;
     bool userMuted, muteWhenBlank = true;
+    Stretch liveStretch = Stretch.Uniform;
 
     public DisplayWindow()
     {
@@ -46,7 +49,8 @@ public partial class DisplayWindow : Window
         Topmost = s.KeepOnTop;
         userMuted = s.MuteScreenAudio;
         var stretch = s.Scaling switch { FrameScaling.Fill => Stretch.UniformToFill, FrameScaling.Stretch => Stretch.Fill, _ => Stretch.Uniform };
-        Live.Stretch = Still.Stretch = stretch;
+        Live.Stretch = Still.Stretch = liveStretch = stretch;
+        foreach (Image tile in Tiles.Children) tile.Stretch = stretch;
         BlankText.Text = s.BlankMessage;
         muteWhenBlank = s.MuteWhenBlank;
         Refresh();
@@ -74,13 +78,34 @@ public partial class DisplayWindow : Window
         }
     }
 
-    public void ShowLive(ImageSource surface)
+    /// <summary>Live mirrors: one tile per shared area, laid out side by side then in a grid.</summary>
+    public void ShowTiles(IReadOnlyList<ImageSource> sources)
     {
         StopWeb();
-        Live.Source = surface;
-        content = Layer.Live;
+        content = Layer.Tiles;
         frozen = blanked = false;
+        SetTiles(sources);
         Refresh();
+    }
+
+    public void SetTiles(IReadOnlyList<ImageSource> sources)
+    {
+        var n = sources.Count;
+        Tiles.Columns = n <= 2 ? Math.Max(1, n) : (int)Math.Ceiling(Math.Sqrt(n));
+        Tiles.Rows = Math.Max(1, (int)Math.Ceiling(n / (double)Tiles.Columns));
+        while (Tiles.Children.Count > n) Tiles.Children.RemoveAt(Tiles.Children.Count - 1);
+        while (Tiles.Children.Count < n)
+        {
+            var tile = new Image { Stretch = liveStretch };
+            RenderOptions.SetBitmapScalingMode(tile, BitmapScalingMode.HighQuality);
+            Tiles.Children.Add(tile);
+        }
+        for (var i = 0; i < n; i++)
+        {
+            var tile = (Image)Tiles.Children[i];
+            tile.Source = sources[i];
+            tile.Margin = new Thickness(n > 1 ? 4 : 0);
+        }
     }
 
     public void ShowPicture(BitmapSource picture)
@@ -91,8 +116,6 @@ public partial class DisplayWindow : Window
         frozen = blanked = false;
         Refresh();
     }
-
-    public void SetLiveSurface(ImageSource surface) => Live.Source = surface;
 
     /// <summary>Freeze holds a still of whatever is showing right now, whatever the mode.</summary>
     public void SetFrozen(BitmapSource? still)
@@ -118,7 +141,8 @@ public partial class DisplayWindow : Window
         BlankLayer.Visibility = blanked ? Visibility.Visible : Visibility.Collapsed;
         Still.Visibility = frozen && !blanked ? Visibility.Visible : Visibility.Collapsed;
         var showContent = !frozen && !blanked;
-        Live.Visibility = showContent && content != Layer.Web ? Visibility.Visible : Visibility.Collapsed;
+        Live.Visibility = showContent && content == Layer.Picture ? Visibility.Visible : Visibility.Collapsed;
+        Tiles.Visibility = showContent && content == Layer.Tiles ? Visibility.Visible : Visibility.Collapsed;
         Web.Visibility = showContent && content == Layer.Web ? Visibility.Visible : Visibility.Collapsed;
         UpdateMute();
     }

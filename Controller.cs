@@ -27,8 +27,8 @@ public sealed class Controller : IDisposable
     public IReadOnlyList<HotkeyAction> FailedHotkeys { get; private set; } = [];
     public event Action? Changed;
 
-    readonly CaptureEngine capture = new();
-    readonly AreaOutline outline = new();
+    readonly CaptureEngine capture = new();   // shared window
+    readonly List<SharedArea> areas = new();
     readonly HotkeyManager hotkeys = new();
     readonly DispatcherTimer autoReturn = new();
     readonly MediaPlayer sound = new();
@@ -43,8 +43,8 @@ public sealed class Controller : IDisposable
         Settings = settings;
         tray = new TrayIcon(this);
         hotkeys.Pressed += Run;
-        capture.NewSurface += s => display?.SetLiveSurface(s);
-        capture.SourceClosed += () => { Notify("Mirrored window closed", "Back to the dashboard."); _ = ShowDashboard(); };
+        capture.NewSurface += s => display?.SetTiles([s]);
+        capture.SourceClosed += () => { Notify("Shared window closed", "Back to the dashboard."); _ = ShowDashboard(); };
         autoReturn.Tick += (_, _) => { autoReturn.Stop(); _ = ShowDashboard(); };
         SystemEvents.DisplaySettingsChanged += (_, _) => Application.Current.Dispatcher.BeginInvoke(OnDisplaysChanged);
     }
@@ -69,6 +69,8 @@ public sealed class Controller : IDisposable
             case HotkeyAction.Blank: ToggleBlank(); break;
             case HotkeyAction.TogglePreview: TogglePreview(); break;
             case HotkeyAction.OpenSettings: OpenSettings(); break;
+            case HotkeyAction.Draw: ToggleDrawing(); break;
+            case HotkeyAction.ClearDrawings: ClearDrawings(); break;
         }
     }
 
@@ -137,7 +139,8 @@ public sealed class Controller : IDisposable
     void StopMirror()
     {
         capture.Stop();
-        outline.Hide();
+        foreach (var a in areas) a.Dispose();
+        areas.Clear();
     }
 
     public void ToggleScreen()
@@ -246,18 +249,66 @@ public sealed class Controller : IDisposable
         else PickArea();
     }
 
+    /// <summary>Adds an area to what's being shared. Anything else on the team screen (dashboard, page, window) is replaced.</summary>
     public async Task MirrorArea(Rect32 area)
     {
         if (!await EnsureScreen()) return;
-        StopMirror();
-        ConfigureCapture();
-        capture.StartArea(area);
-        display!.ShowLive(new WriteableBitmap(1, 1, 96, 96, PixelFormats.Bgr32, null));
-        if (Settings.HighlightArea) outline.Show(area, LiveColor);
-        Settings.LastArea = [area.X, area.Y, area.Width, area.Height];
+        var first = Mode != ScreenMode.MirrorArea || areas.Count == 0;
+        if (first) StopMirror();
+        var a = new SharedArea(areas.Count == 0 ? 1 : areas.Max(x => x.Number) + 1, area, Settings.HighlightArea, Settings.Fps, Settings.ShowCursor);
+        a.SurfaceChanged += _ => UpdateTiles();
+        a.StopRequested += RemoveArea;
+        a.Moved += x => Settings.LastArea = [x.Area.X, x.Area.Y, x.Area.Width, x.Area.Height];
+        a.DrawingChanged += _ => Changed?.Invoke();
+        areas.Add(a);
+        Settings.LastArea = [a.Area.X, a.Area.Y, a.Area.Width, a.Area.Height];
         Settings.Save();
-        SetMode(ScreenMode.MirrorArea, $"Area {area.Width} × {area.Height}");
+        if (first)
+        {
+            display!.ShowTiles(Tiles());
+            SetMode(ScreenMode.MirrorArea, AreasDetail());
+        }
+        else
+        {
+            UpdateTiles();
+            Detail = AreasDetail();
+            Changed?.Invoke();
+        }
         Play();
+    }
+
+    /// <summary>Takes one area off the team screen. The last one going puts the dashboard back.</summary>
+    public void RemoveArea(SharedArea a)
+    {
+        a.Dispose();
+        areas.Remove(a);
+        Settings.Save();   // keeps the latest LastArea from moves/resizes
+        if (areas.Count == 0) { _ = ShowDashboard(); return; }
+        UpdateTiles();
+        Detail = AreasDetail();
+        Changed?.Invoke();
+        Play();
+    }
+
+    List<ImageSource> Tiles() => areas.Select(x => x.Surface).ToList();
+    void UpdateTiles() { if (Mode == ScreenMode.MirrorArea) display?.SetTiles(Tiles()); }
+    string AreasDetail() => string.Join(", ", areas.Select(x => $"area {x.Number} ({x.Area.Width} × {x.Area.Height})"));
+
+    public int SharedAreaCount => areas.Count;
+    public bool Drawing => areas.Any(a => a.Drawing);
+
+    /// <summary>Drawing on/off for every shared area at once (each area's toolbar also has its own Draw button).</summary>
+    public void ToggleDrawing()
+    {
+        if (areas.Count == 0) { Notify("Nothing to draw on", "Share an area first, then draw on it."); return; }
+        var on = !Drawing;
+        foreach (var a in areas) a.SetDrawing(on);
+        Changed?.Invoke();
+    }
+
+    public void ClearDrawings()
+    {
+        foreach (var a in areas) a.ClearDrawing();
     }
 
     public void MirrorActiveWindow()
@@ -266,7 +317,7 @@ public sealed class Controller : IDisposable
         Native.GetWindowThreadProcessId(h, out var pid);
         if (h == IntPtr.Zero || pid == Environment.ProcessId || Native.WindowTitle(h).Length == 0)
         {
-            Notify("No window to mirror", "Click into the window you want to show, then press the hotkey.");
+            Notify("No window to share", "Click into the window you want to show, then press the hotkey.");
             return;
         }
         _ = MirrorWindow(h);
@@ -278,21 +329,27 @@ public sealed class Controller : IDisposable
         StopMirror();
         ConfigureCapture();
         capture.StartWindow(hwnd);
-        display!.ShowLive(new WriteableBitmap(1, 1, 96, 96, PixelFormats.Bgr32, null));
+        display!.ShowTiles([new WriteableBitmap(1, 1, 96, 96, PixelFormats.Bgr32, null)]);
         SetMode(ScreenMode.MirrorWindow, Native.WindowTitle(hwnd));
         Play();
     }
 
     void ConfigureCapture()
     {
-        capture.Fps = Settings.Fps;
-        capture.DrawCursor = Settings.ShowCursor;
+        foreach (var e in areas.Select(a => a.Engine).Append(capture))
+        {
+            e.Fps = Settings.Fps;
+            e.DrawCursor = Settings.ShowCursor;
+        }
     }
 
-    static readonly Color LiveColor = Color.FromRgb(232, 17, 35);
-    static readonly Color FrozenColor = Color.FromRgb(0, 120, 212);
+    void PauseCapture(bool paused)
+    {
+        capture.Paused = paused;
+        foreach (var a in areas) a.Engine.Paused = paused;
+    }
 
-    /// <summary>Top-level app windows worth offering in the "Mirror a window" menu.</summary>
+    /// <summary>Top-level app windows worth offering in the "Share a window" menu.</summary>
     public static List<(IntPtr Handle, string Title)> OpenWindows()
     {
         var list = new List<(IntPtr, string)>();
@@ -317,8 +374,8 @@ public sealed class Controller : IDisposable
         Frozen = !Frozen;
         // A still of what's on the team screen right now, so freeze works the same in every mode.
         display.SetFrozen(Frozen ? CaptureEngine.GrabScreen(Monitor.Bounds) : null);
-        capture.Paused = Frozen || Blanked;
-        if (Mode == ScreenMode.MirrorArea) outline.SetColor(Frozen ? FrozenColor : LiveColor);
+        PauseCapture(Frozen || Blanked);
+        foreach (var a in areas) a.SetFrozen(Frozen);
         Changed?.Invoke();
         Play();
     }
@@ -328,7 +385,7 @@ public sealed class Controller : IDisposable
         if (Mode == ScreenMode.Off || display == null) return;
         Blanked = !Blanked;
         display.SetBlank(Blanked);
-        capture.Paused = Frozen || Blanked;
+        PauseCapture(Frozen || Blanked);
         Changed?.Invoke();
         Play();
     }
@@ -373,7 +430,7 @@ public sealed class Controller : IDisposable
             Notify("Some hotkeys are taken", string.Join(", ", FailedHotkeys.Select(Describe)) + " — another app already uses those keys.");
         display?.Apply(s);
         ConfigureCapture();
-        if (!s.HighlightArea) outline.Hide();
+        foreach (var a in areas) a.ShowControls(s.HighlightArea);
         preview?.Apply();
         if (Mode == ScreenMode.Dashboard || (monitorChanged && Mode != ScreenMode.Off)) _ = ShowDashboard();
         Changed?.Invoke();
@@ -404,22 +461,24 @@ public sealed class Controller : IDisposable
         ScreenMode.Dashboard => "Dashboard",
         ScreenMode.WebPage => "Web page",
         ScreenMode.Picture => "Picture",
-        ScreenMode.MirrorArea => "Mirroring an area",
-        ScreenMode.MirrorWindow => "Mirroring a window",
+        ScreenMode.MirrorArea => areas.Count == 1 ? "Sharing an area" : $"Sharing {areas.Count} areas",
+        ScreenMode.MirrorWindow => "Sharing a window",
         _ => "",
-    } + (Blanked ? " · blanked" : Frozen ? " · frozen" : "");
+    } + (Blanked ? " · blanked" : Frozen ? " · frozen" : "") + (Drawing ? " · drawing" : "");
 
     public static string Describe(HotkeyAction a) => a switch
     {
-        HotkeyAction.ToggleScreen => "Turn team screen on/off",
-        HotkeyAction.Dashboard => "Show dashboard",
-        HotkeyAction.MirrorArea => "Mirror an area",
-        HotkeyAction.MirrorLastArea => "Mirror the last area again",
-        HotkeyAction.MirrorActiveWindow => "Mirror the window I'm in",
+        HotkeyAction.ToggleScreen => "Turn the team screen on / off",
+        HotkeyAction.Dashboard => "Stop sharing and show the dashboard",
+        HotkeyAction.MirrorArea => "Share an area of my screen (adds another if one's already shared)",
+        HotkeyAction.MirrorLastArea => "Share the last area again",
+        HotkeyAction.MirrorActiveWindow => "Share the window I'm in",
         HotkeyAction.ShowClipboard => "Show what's on my clipboard",
-        HotkeyAction.Freeze => "Freeze / unfreeze",
-        HotkeyAction.Blank => "Blank / unblank",
-        HotkeyAction.TogglePreview => "Show / hide preview window",
+        HotkeyAction.Draw => "Draw on shared areas on / off",
+        HotkeyAction.ClearDrawings => "Clear all drawings",
+        HotkeyAction.Freeze => "Freeze / unfreeze (hold the current picture)",
+        HotkeyAction.Blank => "Blank / unblank (hide everything)",
+        HotkeyAction.TogglePreview => "Show / hide the preview window",
         HotkeyAction.OpenSettings => "Open settings",
         _ => a.ToString(),
     };
@@ -428,7 +487,7 @@ public sealed class Controller : IDisposable
 
     public void Dispose()
     {
-        capture.Stop();
+        StopMirror();
         hotkeys.Dispose();
         tray.Dispose();
     }

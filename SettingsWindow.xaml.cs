@@ -29,7 +29,7 @@ public partial class SettingsWindow : Window
 
         pages["General"] = GeneralPage;
         pages["Dashboard"] = DashboardPage;
-        pages["Mirroring"] = MirroringPage;
+        pages["Sharing"] = MirroringPage;
         pages["Freeze & blank"] = FreezePage;
         pages["Sound"] = SoundPage;
         pages["Hotkeys"] = HotkeysPage;
@@ -211,14 +211,14 @@ public partial class SettingsWindow : Window
             Card("Try it", "Saves your changes and puts the dashboard up now.", ButtonOf("Show dashboard", () => { Commit(); _ = c.ShowDashboard(); })));
     }
 
-    UIElement MirroringPage() => PageOf("Mirroring",
-        Card("Match the team screen's shape", "The box you drag keeps the team screen's proportions, so the mirror fills it edge to edge with no black bars. Hold Shift while dragging for any shape.", Switch(nameof(AppSettings.LockAreaShape))),
+    UIElement MirroringPage() => PageOf("Sharing your screen",
+        Card("Lock the box to the team screen's shape", "Off (normal): drag any shape, like a screenshot tool. On: the box keeps the team screen's proportions so it fills the screen with no black bars; hold Shift for any shape.", Switch(nameof(AppSettings.LockAreaShape))),
         Card("Frame rate", "Higher is smoother but uses more CPU. 15 is plenty for pages and documents.", SliderFor(nameof(AppSettings.Fps), 5, 60, "fps", 5)),
-        Card("Show my mouse pointer", "Draws your pointer into the mirror so people can follow along.", Switch(nameof(AppSettings.ShowCursor))),
-        Card("Outline the mirrored area on my screen", "A red frame around what's being shown (blue while frozen). It never appears on the team screen.", Switch(nameof(AppSettings.HighlightArea))),
-        Card("Scaling", "How the mirror fits the team screen.", EnumCombo<FrameScaling>(nameof(AppSettings.Scaling),
+        Card("Show my mouse pointer", "Draws your pointer into what you share so people can follow along.", Switch(nameof(AppSettings.ShowCursor))),
+        Card("Show a frame and controls round shared areas", "A red frame you can drag to resize (blue while frozen), plus a toolbar to move the area, draw on it, or stop sharing it. None of it appears on the team screen.", Switch(nameof(AppSettings.HighlightArea))),
+        Card("Scaling", "How shared areas fit the team screen.", EnumCombo<FrameScaling>(nameof(AppSettings.Scaling),
             (FrameScaling.Fit, "Fit (black bars)"), (FrameScaling.Fill, "Fill (crop edges)"), (FrameScaling.Stretch, "Stretch"))),
-        Card("Go back to the dashboard after", "Stops a mirror you forgot about. 0 means never.", SliderFor(nameof(AppSettings.AutoReturnMinutes), 0, 120, "min", 5)),
+        Card("Go back to the dashboard after", "Stops sharing you forgot about. 0 means never.", SliderFor(nameof(AppSettings.AutoReturnMinutes), 0, 120, "min", 5)),
         Card("Forget the last area", draft.LastArea is [_, _, var w, var h] ? $"Remembered: {w} × {h}" : "Nothing remembered yet.",
             ButtonOf("Forget", () => draft.LastArea = null)));
 

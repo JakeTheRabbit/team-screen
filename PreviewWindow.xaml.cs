@@ -60,6 +60,11 @@ public partial class PreviewWindow : Window
         BlankBtn.IsChecked = c.Blanked;
         FreezeBtn.IsEnabled = BlankBtn.IsEnabled = on;
         PowerBtn.Content = on ? "Turn off" : "Turn on";
+        DashboardBtn.Content = live ? "Stop sharing" : "Dashboard";
+        DashboardBtn.ToolTip = live ? "Stop sharing and show the dashboard" : "Show the dashboard";
+        AreaBtn.Content = c.SharedAreaCount > 0 ? "Share another area" : "Share area";
+        DrawBtn.IsChecked = c.Drawing;
+        DrawBtn.IsEnabled = c.SharedAreaCount > 0;
         Grab();
     }
 
@@ -72,6 +77,7 @@ public partial class PreviewWindow : Window
 
     void Dashboard_Click(object sender, RoutedEventArgs e) => _ = c.ShowDashboard();
     void Area_Click(object sender, RoutedEventArgs e) => c.PickArea();
+    void Draw_Click(object sender, RoutedEventArgs e) => c.ToggleDrawing();
     void Freeze_Click(object sender, RoutedEventArgs e) => c.ToggleFreeze();
     void Blank_Click(object sender, RoutedEventArgs e) => c.ToggleBlank();
     void Power_Click(object sender, RoutedEventArgs e) => c.ToggleScreen();
